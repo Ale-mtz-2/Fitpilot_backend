@@ -10,7 +10,7 @@ from app.models.usersModel import User
 #     return u
 
 async def list_users(db: AsyncSession):
-    res = await db.execute(select(User))
+    res = await db.execute(select(User)) #holamu
     return res.scalars().all()
 
 async def update_password(db: AsyncSession, username: str, password: str) -> User:
