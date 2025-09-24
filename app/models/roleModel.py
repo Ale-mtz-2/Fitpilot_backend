@@ -1,21 +1,20 @@
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from sqlalchemy import DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.postgresql import Base
+# from app.models.usersModel import User
 
-class Session(Base):
-    __tablename__ = "sessions"
+# if TYPE_CHECKING:
+#     from app.models.usersModel import User
+
+class Role(Base):
+    __tablename__ = "users_roles"
+    
     id: Mapped[int] = mapped_column(primary_key=True)
-    refresh_token: Mapped[str]
-    session: Mapped[str]
-    device_name: Mapped[str] = mapped_column(nullable=True)
-    ip_address: Mapped[str] = mapped_column(nullable=True)
-    last_active_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    revoked_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True),nullable=True)
-    user_agent: Mapped[str] = mapped_column(nullable=True)
-    user_id: Mapped[int] = mapped_column(nullable=True)
-    created_at: Mapped[Optional[datetime]] = mapped_column(
+    role: Mapped[str]
+    description: Mapped[str]
+    created_at:  Mapped[Optional[datetime]] = mapped_column(
                                                     DateTime(timezone=True), 
                                                     nullable=True,
                                                     server_default=func.now()  
@@ -26,3 +25,6 @@ class Session(Base):
                                                     onupdate=func.now()  
                                                     )
     deleted_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+
+
+    users: Mapped[list["User"]] = relationship("User", back_populates="role")

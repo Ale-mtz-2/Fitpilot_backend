@@ -1,0 +1,77 @@
+# --- SO / editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.code-workspace
+
+# --- Python básico ---
+__pycache__/
+*.py[cod]
+*$py.class
+.python-version
+
+# --- Entornos virtuales ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Dependencias / empaquetado ---
+*.egg-info/
+.eggs/
+dist/
+build/
+pip-wheel-metadata/
+
+# --- Tests & coverage ---
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.cache/
+
+# --- Tipado / linters / herramientas ---
+.mypy_cache/
+.pytype/
+.ruff_cache/
+.pyre/
+.tox/
+
+# --- Notebooks ---
+.ipynb_checkpoints/
+
+# --- Logs / runtime ---
+logs/
+*.log
+uvicorn*.log
+*.pid
+tmp/
+
+# --- Config/secretos (¡no subas credenciales!) ---
+.env
+.env.*
+!.env.example          # deja una plantilla sin secretos
+*.pem
+*.key
+*.crt
+*.p12
+
+# --- Docker (archivos locales opcionales) ---
+docker-compose.override.yml
+# Si bind-mounteas datos locales:
+data/
+volumes/
+pg_data/
+
+# --- Bases de datos locales de dev (si usas SQLite en pruebas) ---
+*.sqlite3
+*.db
+
+# --- Archivos estáticos opcionales ---
+staticfiles/
+media/
+
+# --- Node opcional (si hay panel/front dentro del repo) ---
+node_modules/
+*.tsbuildinfo

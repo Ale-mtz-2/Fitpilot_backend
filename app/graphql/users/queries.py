@@ -4,15 +4,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.usersCrud import list_users
 from app.db.postgresql import get_db
+from app.graphql.auth.permissions import IsAuthenticated
 from app.graphql.users.types import User
 
 
 @strawberry.type
 class UserQuery:
-    @strawberry.field
+    # @strawberry.field
+    @strawberry.field(permission_classes=[IsAuthenticated])
     async def users(self, info) -> list[User]:
         db = info.context.db
 
         users = await list_users(db=db)
-        return users
-        # return await info.context["db"].execute(select(User))
+        return [User(id=u.id, username=u.username, role_id=u.role_id, role=u.role) for u in users]
