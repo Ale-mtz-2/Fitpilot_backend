@@ -2,11 +2,14 @@ from fastapi import HTTPException, Request, Response
 import strawberry
 from user_agents import parse
 import uuid
+import datetime
 
 from app.auth.hashing import verify_password
-from app.auth.jwt import create_access_token, create_refresh_token
+from app.auth.jwt import create_access_token, create_refresh_token, verify_refresh_token
 from app.crud.authCrud import get_user
+from app.crud.sessionCrud import create_session
 from app.graphql.auth.types import LoginInput, TokenResponse
+from app.models.sessionModel import Session
 
 
 @strawberry.type
@@ -30,7 +33,8 @@ class AuthMutation:
         password = data.password
 
         user = await get_user(db=info.context.db, username=identifier)
-
+        print("user",user)
+        
         if not user:
             raise HTTPException(status_code=401, detail="User not found")
 
@@ -39,55 +43,43 @@ class AuthMutation:
         
         session_id = f"session-id{uuid.uuid4().hex}"
         # token = create_access_token({"user_id": str(user.id), "session_id": session_id})
-        refresh_token = create_refresh_token({"user_id": str(user.id), "session_id": session_id})
-        access_token = create_access_token({"user_id": str(user.id), "session_id": session_id})
-
-        # user = await info.context["db"].execute(select(User))
-
-        # user = await engine.find_one(
-        #     UserModel,ACCESS_TOKEN_EXPIRE_MINUTES
-        #     {
-        #         "$or": [
-        #             {"email": identifier},
-        #             {"phone": identifier}
-        #         ]
-        #     }
-        # )
-
-        # print("use_in_login", user)
+        refresh_token = create_refresh_token({"user_id": str(user.id), "username": user.username , "session_id": session_id })
+        access_token = create_access_token({"user_id": str(user.id), "username": user.username , "session_id": session_id})
     
-        # if not user:
-        #     raise HTTPException(status_code=401, detail="User not found")
+        payload_refresh = verify_refresh_token(refresh_token)
+        exp = datetime.datetime.fromtimestamp(payload_refresh.get("exp")) 
 
-        # if not verify_password(password, user.password):
-        #     raise HTTPException(status_code=401, detail="Credentials not valid")
+        print("exp--->", exp)
 
-        # session_id = f"session-id{uuid.uuid4().hex}"
-        # # token = create_access_token({"user_id": str(user.id), "session_id": session_id})
-        # refresh_token = create_refresh_token({"user_id": str(user.id), "session_id": session_id})
-        # access_token = create_access_token({"user_id": str(user.id), "session_id": session_id})
-        
-        # session = SessionModel(
-        #     session_id=session_id,
-        #     user_id=ObjectId(user.id), 
-        #     token=refresh_token, 
-        #     created_at=datetime.now(),
-        #     user_agent=user_agent,
-        #     device_name=device_name,
-        #     ip_address=ip_address,
-        #     last_active_at=datetime.now(),
-        #     is_active=True
-        # )
-        # new_session = await engine.save(session)
+        session = Session(
+            refresh_token = refresh_token,
+            session = session_id,
+            device_name = device_name,
+            ip_address = ip_address,
+            user_agent = user_agent,
+            user_id = user.id,
+            revoked_at = exp,
+            last_active_at = datetime.datetime.now()
+        )
+        print("session",session)
 
-        # response.set_cookie(
-        #     key="refresh_token",
-        #     value=refresh_token,
-        #     httponly=True,
-        #     secure=False,             # Solo se envía en HTTPS
-        #     samesite="lax",       # Previene CSRF
-        #     max_age=60 * 60 * 24 * 15 # 7 días
-        # )
+        insert_session = await create_session(
+            db=info.context.db, 
+            sessionEntry=session
+        )
+
+        print("insert_session", insert_session)
+
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=False,             # Solo se envía en HTTPS
+            samesite="lax",       # Previene CSRF
+            max_age=60 * 60 * 24 * 15 # 7 días
+        )
+
+        response.headers["x-access-token"] = access_token
 
         return TokenResponse(access_token=access_token)
         
