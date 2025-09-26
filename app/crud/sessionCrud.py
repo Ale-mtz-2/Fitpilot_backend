@@ -20,7 +20,7 @@ async def create_session(
     user_agent: Optional[str] = None,
 ) -> Session:
     """Creates a new session for the given user with proper error handling."""
-    last_active = datetime.now(timezone.utc).isoformat()
+    last_active = datetime.now(timezone.utc)
     session_row = Session(
         user_id=user_id,
         session=session_id,
