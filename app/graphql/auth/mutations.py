@@ -64,8 +64,13 @@ class AuthMutation:
         print("session",session)
 
         insert_session = await create_session(
-            db=info.context.db, 
-            sessionEntry=session
+            db=info.context.db,
+            user_id=user.id,
+            session_id=session_id,
+            refresh_token=refresh_token,
+            device_name=device_name,
+            ip_address=ip_address,
+            user_agent=user_agent
         )
 
         print("insert_session", insert_session)
