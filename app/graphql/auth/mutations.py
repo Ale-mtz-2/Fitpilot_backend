@@ -24,7 +24,7 @@ class AuthMutation:
 
         
         
-        ip_address = request.client.host
+        ip_address = request.client.host if request.client else None
         ua = parse(user_agent)
         device_name = f"{ua.device.family} - {ua.os.family} {ua.os.version_string}"
         # -----------------------------
@@ -47,7 +47,8 @@ class AuthMutation:
         access_token = create_access_token({"user_id": str(user.id), "username": user.username , "session_id": session_id})
     
         payload_refresh = verify_refresh_token(refresh_token)
-        exp = datetime.datetime.fromtimestamp(payload_refresh.get("exp")) 
+        exp_timestamp = payload_refresh.get("exp") if payload_refresh else None
+        exp = datetime.datetime.fromtimestamp(exp_timestamp) if exp_timestamp else None 
 
         print("exp--->", exp)
 
@@ -65,12 +66,7 @@ class AuthMutation:
 
         insert_session = await create_session(
             db=info.context.db,
-            user_id=user.id,
-            session_id=session_id,
-            refresh_token=refresh_token,
-            device_name=device_name,
-            ip_address=ip_address,
-            user_agent=user_agent
+            sessionEntry=session
         )
 
         print("insert_session", insert_session)

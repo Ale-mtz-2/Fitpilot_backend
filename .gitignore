@@ -75,3 +75,4 @@ media/
 # --- Node opcional (si hay panel/front dentro del repo) ---
 node_modules/
 *.tsbuildinfo
+.claude/settings.local.json

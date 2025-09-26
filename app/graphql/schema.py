@@ -9,9 +9,10 @@ import strawberry
 from app.graphql.auth.mutations import AuthMutation
 from app.graphql.users.mutations import UserMutation
 from app.graphql.users.queries import UserQuery
+from app.graphql.members.queries import MembersQuery
 
 @strawberry.type
-class Query(UserQuery):
+class Query(UserQuery, MembersQuery):
     @strawberry.field
     def hello(self) -> str:
         return "Hello from GraphQL!"

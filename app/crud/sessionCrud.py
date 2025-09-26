@@ -9,37 +9,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.sessionModel import Session
 
 
-async def create_session(
-    db: AsyncSession,
-    *,
-    user_id: int,
-    session_id: str,
-    refresh_token: str,
-    device_name: Optional[str] = None,
-    ip_address: Optional[str] = None,
-    user_agent: Optional[str] = None,
-) -> Session:
-    """Creates a new session for the given user with proper error handling."""
-    last_active = datetime.now(timezone.utc)
-    session_row = Session(
-        user_id=user_id,
-        session=session_id,
-        refresh_token=refresh_token,
-        device_name=device_name,
-        ip_address=ip_address,
-        user_agent=user_agent,
-        last_active_at=last_active,
-    )
-
-    db.add(session_row)
+async def create_session(db: AsyncSession, sessionEntry: Session) -> Session:
+    """Creates a new session with proper error handling."""
+    db.add(sessionEntry)
     try:
         await db.commit()
     except SQLAlchemyError:
         await db.rollback()
         raise
 
-    await db.refresh(session_row)
-    return session_row
+    await db.refresh(sessionEntry)
+    return sessionEntry
 
 
 async def verify_session(db: AsyncSession, session_id: str) -> Session | None:
