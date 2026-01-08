@@ -75,3 +75,7 @@ media/
 # --- Node opcional (si hay panel/front dentro del repo) ---
 node_modules/
 *.tsbuildinfo
+.claude/settings.local.json
+migration/00_backup.sh
+migration/99_run_migration.sh
+list_backup_tables.py

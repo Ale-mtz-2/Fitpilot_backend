@@ -1,6 +1,24 @@
-from app.models.usersModel import User
-from app.models.roleModel import Role
+# Modern FitPilot models - Modular architecture
+from app.models.userModel import People, Role, PersonRole, Account
+from app.models.membershipsModel import MembershipPlan, MembershipSubscription, Payment
+from app.models.venueModel import (
+    Venue, Seat, SeatType, Asset, AssetType, AssetModel, AssetSeatAssignment, AssetEvent
+)
+from app.models.classModel import (
+    ClassType, ClassTemplate, ClassSession, Reservation, StandingBooking, StandingBookingException
+)
 from app.models.sessionModel import Session
+from app.models.leadsModel import (
+    LeadSource, Lead, LeadEvent, FormSubmission, MarketingCampaign,
+    LeadAttribution, CommunicationOptIn, WhatsAppThread
+)
 
-
-__all__ = ["User", "Role", "Session"]
+__all__ = [
+    "People", "Role", "PersonRole", "Account",
+    "MembershipPlan", "MembershipSubscription", "Payment",
+    "Venue", "Seat", "SeatType", "Asset", "AssetType", "AssetModel", "AssetSeatAssignment", "AssetEvent",
+    "ClassType", "ClassTemplate", "ClassSession", "Reservation", "StandingBooking", "StandingBookingException",
+    "Session",
+    "LeadSource", "Lead", "LeadEvent", "FormSubmission", "MarketingCampaign",
+    "LeadAttribution", "CommunicationOptIn", "WhatsAppThread"
+]
