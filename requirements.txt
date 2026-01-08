@@ -1,10 +1,30 @@
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-strawberry-graphql[fastapi]>=0.240.0
-sqlalchemy>=2.0.35
-asyncpg>=0.28.0
-python-jose==3.3.0
-passlib[bcrypt]==1.7.4
-python-multipart==0.0.6
+# FastAPI and core web framework
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+
+# GraphQL - Latest version with potential Python 3.13 fixes
+strawberry-graphql[fastapi]>=0.282.0
+
+# Database
+sqlalchemy>=2.0.25
+asyncpg>=0.29.0
+
+# Authentication
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+
+# File handling and utilities
+python-multipart>=0.0.9
 user-agents>=2.2.0
-tzdata>=2023.3
+Pillow>=10.1.0
+
+# Date/time handling
+tzdata>=2024.1
+
+# Background job scheduling
+
+# Date utilities (for memberships)
+python-dateutil>=2.9.0
+
+# Optional: Better JSON serialization
+pydantic>=2.5.0

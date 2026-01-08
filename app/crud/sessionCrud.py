@@ -10,15 +10,27 @@ from app.models.sessionModel import Session
 
 
 async def create_session(db: AsyncSession, sessionEntry: Session) -> Session:
-    """Creates a new session with proper error handling."""
+    """Create a session using a single transaction without post-commit refresh.
+
+    Rationale:
+    - Using `refresh()` immediately after `commit()` can trigger an extra
+      SELECT that starts a new transaction while the connection may still be
+      finalizing the previous operation under high concurrency, which can lead
+      to asyncpg's "another operation is in progress" error.
+    - We instead `flush()` to persist and populate PKs, then `commit()` and
+      return the instance (with expire_on_commit=False in SessionLocal).
+    """
     db.add(sessionEntry)
     try:
+        # Ensure INSERT is issued and PKs are populated within the same txn
+        await db.flush()
         await db.commit()
     except SQLAlchemyError:
         await db.rollback()
         raise
 
-    await db.refresh(sessionEntry)
+    # No refresh needed: SessionLocal is configured with expire_on_commit=False
+    # so attributes like `id` remain available.
     return sessionEntry
 
 
@@ -29,56 +41,53 @@ async def verify_session(db: AsyncSession, session_id: str) -> Session | None:
 
 
 async def update_last_active_at(db: AsyncSession, session_id: str) -> None:
-    """Updates the last_active_at timestamp for a session using database function."""
+    """Updates the last_active_at timestamp for a session using database function.
+
+    Note: Does NOT commit or flush - changes will be committed when the session closes.
+    This function is typically called from build_context() which shares the request session.
+    """
     print("session_id in update_last_active_at", session_id)
     stmt = update(Session).where(Session.session == session_id).values(last_active_at=func.now())
-    try:
-        await db.execute(stmt)
-        await db.commit()
-    except SQLAlchemyError:
-        await db.rollback()
-        raise
+    await db.execute(stmt)
+    # No flush, no commit - just queue the update
 
 
 async def touch_session(db: AsyncSession, session_id: str) -> None:
-    """Updates the last_active_at timestamp for a session with explicit UTC time."""
+    """Updates the last_active_at timestamp for a session with explicit UTC time.
+
+    Note: Does NOT commit or flush - changes will be committed when the session closes.
+    """
     timestamp = datetime.now(timezone.utc).isoformat()
-    try:
-        await db.execute(
-            update(Session)
-            .where(Session.session == session_id)
-            .values(last_active_at=timestamp, updated_at=datetime.utcnow())
-        )
-        await db.commit()
-    except SQLAlchemyError:
-        await db.rollback()
-        raise
+    await db.execute(
+        update(Session)
+        .where(Session.session == session_id)
+        .values(last_active_at=timestamp, updated_at=datetime.utcnow())
+    )
+    # No flush, no commit - just queue the update
 
 
 async def revoke_session(db: AsyncSession, session_id: str) -> None:
-    """Marks the session as revoked."""
+    """Marks the session as revoked.
+
+    Note: Does NOT commit or flush - changes will be committed when the session closes.
+    """
     timestamp = datetime.now(timezone.utc).isoformat()
-    try:
-        await db.execute(
-            update(Session)
-            .where(Session.session == session_id)
-            .values(revoked_at=timestamp, updated_at=datetime.utcnow())
-        )
-        await db.commit()
-    except SQLAlchemyError:
-        await db.rollback()
-        raise
+    await db.execute(
+        update(Session)
+        .where(Session.session == session_id)
+        .values(revoked_at=timestamp, updated_at=datetime.utcnow())
+    )
+    # No flush, no commit - just queue the update
 
 
 async def update_refresh_token(db: AsyncSession, session_id: str, refresh_token: str) -> None:
-    """Stores a new refresh token for an existing session."""
-    try:
-        await db.execute(
-            update(Session)
-            .where(Session.session == session_id)
-            .values(refresh_token=refresh_token, updated_at=datetime.utcnow())
-        )
-        await db.commit()
-    except SQLAlchemyError:
-        await db.rollback()
-        raise
+    """Stores a new refresh token for an existing session.
+
+    Note: Does NOT commit or flush - changes will be committed when the session closes.
+    """
+    await db.execute(
+        update(Session)
+        .where(Session.session == session_id)
+        .values(refresh_token=refresh_token, updated_at=datetime.utcnow())
+    )
+    # No flush, no commit - just queue the update

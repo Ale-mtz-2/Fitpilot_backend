@@ -76,3 +76,6 @@ media/
 node_modules/
 *.tsbuildinfo
 .claude/settings.local.json
+migration/00_backup.sh
+migration/99_run_migration.sh
+list_backup_tables.py

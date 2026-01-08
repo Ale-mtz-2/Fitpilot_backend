@@ -108,7 +108,7 @@ GRANT ALL ON SCHEMA app TO appuser;
 
 #### Configurar variables de entorno (Recomendado):
 
-Crea un archivo `.env` en la raíz del proyecto:
+Crea un archivo `.env` en la ra?z del proyecto:
 
 ```env
 DATABASE_URL=postgresql+asyncpg://appuser:secret123@localhost:5432/defaultdb

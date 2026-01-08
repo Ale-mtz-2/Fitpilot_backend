@@ -1,0 +1,1 @@
+# Class Sessions GraphQL module

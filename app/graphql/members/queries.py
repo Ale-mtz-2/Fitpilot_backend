@@ -1,31 +1,44 @@
-from typing import Optional
+﻿from typing import Optional, List
 
 import strawberry
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.crud.membersCrud import list_members
-from app.graphql.members.types import MembersConnection
+from app.crud.membersCrud import get_members_list, get_member_by_id
+from app.graphql.members.types import Member
+from app.graphql.auth.permissions import IsAuthenticated
+from app.core.conversions import coerce_int
 
 
 @strawberry.type
 class MembersQuery:
-    @strawberry.field
+    @strawberry.field(permission_classes=[IsAuthenticated])
     async def members(
         self,
         info,
-        limit: int = 100,
+        limit: Optional[int] = None,
         offset: int = 0,
-        search: Optional[str] = None,
-    ) -> MembersConnection:
+        search: Optional[str] = None
+    ) -> List[Member]:
+        """Get comprehensive list of all members with optional filters"""
         db: AsyncSession = info.context.db
-        result = await list_members(
+        members_data = await get_members_list(
             db=db,
             limit=limit,
             offset=offset,
-            search=search,
-        )
-        return MembersConnection.from_collection(
-            result["items"],
-            result["total"],
+            search=search
         )
 
+        return [Member.from_data(member_data) for member_data in members_data]
+
+    @strawberry.field(permission_classes=[IsAuthenticated])
+    async def member(self, info, member_id: int) -> Optional[Member]:
+        """Get detailed member information by ID"""
+        db: AsyncSession = info.context.db
+
+        member_id = coerce_int(member_id)
+        if member_id is None:
+            return None
+
+        member_data = await get_member_by_id(db=db, member_id=member_id)
+
+        return Member.from_data(member_data) if member_data else None

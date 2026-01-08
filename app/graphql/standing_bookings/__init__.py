@@ -1,0 +1,3 @@
+"""
+Standing Bookings GraphQL module
+"""
